@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Manajemen Organisasi - ACS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans antialiased overflow-hidden flex flex-col md:flex-row">
+
+    <!-- OVERLAY MOBILE SIDEBAR -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shrink-0">
+        <!-- Logo Header -->
+        <div class="h-16 flex items-center justify-between px-5 bg-slate-950/60 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+                <!-- ACS Official Logo Badge -->
+                <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700/70 p-1 flex items-center justify-center shadow-md shadow-brand-600/10 shrink-0">
+                    <svg class="w-full h-full" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Yellow Dynamic Arrow & Swoosh Top -->
+                        <path d="M340 75 L480 25 L435 110 L405 82 C365 102 325 112 275 112 C185 112 145 87 155 57 C165 32 215 17 305 17 L345 42 L305 42 C235 42 195 52 190 67 C185 82 215 92 275 92 C315 92 350 85 385 69 L340 75 Z" fill="#FFBA00"/>
+                        <!-- Yellow Lower Dynamic Swoosh -->
+                        <path d="M90 235 C190 248 285 228 350 172 C265 215 175 220 90 235 Z" fill="#FFBA00"/>
+                        <!-- Blue 'A' Letter Shape -->
+                        <path d="M15 245 L145 35 H195 L140 215 H170 L205 118 H165 L153 78 L120 180 Z" fill="#004CBD"/>
+                        <!-- Blue 'S' Letter Shape with Arrow Accent -->
+                        <path d="M245 245 C305 245 425 230 425 190 C425 155 365 145 305 145 C265 145 240 155 240 167 C240 180 270 187 310 192 C370 200 420 207 420 242 C420 282 340 297 280 297 C220 297 180 277 180 252 H225 C230 264 255 270 285 270 C330 270 375 262 375 244 C375 230 340 224 290 217 C240 210 195 202 195 167 C195 127 255 114 315 114 C375 114 420 132 420 162 H375 C370 150 345 142 310 142 C270 142 240 150 240 167 Z" fill="#004CBD"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-base tracking-wider leading-tight">ACS</h1>
+                    <p class="text-[11px] text-slate-400 leading-none">Dashboard Organisasi</p>
+                </div>
+            </div>
+            <button class="md:hidden text-slate-400 hover:text-white" onclick="toggleSidebar()">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Utama</p>
+            
+            <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-white bg-brand-600 shadow-md shadow-brand-600/20">
+                <i class="fa-solid fa-chart-pie w-5 text-center text-base"></i>
+                Overview & Statistik
+            </button>
+
+            <button onclick="switchTab('members')" id="nav-members" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-users w-5 text-center text-base"></i>
+                Manajemen Anggota
+            </button>
+
+            <button onclick="switchTab('content')" id="nav-content" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-newspaper w-5 text-center text-base"></i>
+                Manajemen Konten
+            </button>
+
+            <button onclick="switchTab('kanban')" id="nav-kanban" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-list-check w-5 text-center text-base"></i>
+                Tugas / Kanban Board
+            </button>
+
+            <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-calendar-days w-5 text-center text-base"></i>
+                Kalender Deadline
+            </button>
+
+            <button onclick="switchTab('todo')" id="nav-todo" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-square-check w-5 text-center text-base"></i>
+                Personal To-Do List
+            </button>
+        </nav>
+
+        <!-- User Brief Profile Footer -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+            <div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/40">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-brand-500">
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-white truncate">Siti Rahmawati</p>
+                    <p class="text-[11px] text-slate-400 truncate">Ketua Organisasi</p>
+                </div>
+                <button class="text-slate-400 hover:text-slate-200 p-1" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+        
+        <!-- HEADER TOP BAR -->
+        <header class="h-16 bg-white border-b border-slate-200 px-4 md:px-8 flex items-center justify-between shrink-0 z-10">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg hover:bg-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M340 75 L480 25 L435 110 L405 82 C365 102 325 112 275 112 C185 112 145 87 155 57 C165 32 215 17 305 17 L345 42 L305 42 C235 42 195 52 190 67 C185 82 215 92 275 92 C315 92 350 85 385 69 L340 75 Z" fill="#FFBA00"/>
+                            <path d="M90 235 C190 248 285 228 350 172 C265 215 175 220 90 235 Z" fill="#FFBA00"/>
+                            <path d="M15 245 L145 35 H195 L140 215 H170 L205 118 H165 L153 78 L120 180 Z" fill="#004CBD"/>
+                            <path d="M245 245 C305 245 425 230 425 190 C425 155 365 145 305 145 C265 145 240 155 240 167 C240 180 270 187 310 192 C370 200 420 207 420 242 C420 282 340 297 280 297 C220 297 180 277 180 252 H225 C230 264 255 270 285 270 C330 270 375 262 375 244 C375 230 340 224 290 217 C240 210 195 202 195 167 C195 127 255 114 315 114 C375 114 420 132 420 162 H375 C370 150 345 142 310 142 C270 142 240 150 240 167 Z" fill="#004CBD"/>
+                        </svg>
+                    </div>
+                </button>
+                <div class="relative hidden sm:block w-64 lg:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" placeholder="Cari di seluruh dashboard..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-transparent rounded-xl text-xs sm:text-sm focus:outline-none focus:bg-white focus:border-brand-500 transition-all">
+                </div>
+            </div>
+
+            <!-- Header Right Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Notifications -->
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50">
+                        <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                            <h4 class="font-semibold text-xs text-slate-800">Notifikasi Terbaru</h4>
+                            <span class="text-[10px] text-brand-600 font-medium cursor-pointer">Tandai dibaca</span>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                            <a href="#" class="block p-3 hover:bg-slate-50 transition">
+                                <p class="text-xs text-slate-700"><span class="font-semibold">Budi</span> menyelesaikan tugas LPJ</p>
+                                <span class="text-[10px] text-slate-400">10 menit yang lalu</span>
+                            </a>
+                            <a href="#" class="block p-3 hover:bg-slate-50 transition">
+                                <p class="text-xs text-slate-700">Draf artikel baru siap untuk ditinjau</p>
+                                <span class="text-[10px] text-slate-400">1 jam yang lalu</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-slate-200"></div>
+
+                <!-- Date display -->
+                <div class="hidden lg:flex items-center gap-2 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span id="current-date-str">Kamis, 15 Okt 2026</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY CONTAINER (Scrollable) -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 bg-slate-50">
+
+            <!-- ================= MODULE 1: OVERVIEW & STATISTIK ================= -->
+            <section id="sec-overview" class="tab-content space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Ringkasan Organisasi</h2>
+                        <p class="text-xs text-slate-500">Pantau perkembangan performa, tim, dan proyek utama secara langsung.</p>
+                    </div>
+                    <button onclick="switchTab('kanban')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-medium hover:bg-brand-700 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Buat Tugas Baru
+                    </button>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- KPI 1 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-500">Total Anggota</span>
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-baseline justify-between">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-total-members">48</h3>
+                            <span class="text-xs font-medium text-emerald-600 flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-up"></i> +12%
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Aktif berpartisipasi</p>
+                    </div>
+
+                    <!-- KPI 2 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-500">Konten Rilis (Bulan Ini)</span>
+                            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-photo-film"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-baseline justify-between">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-total-content">18</h3>
+                            <span class="text-xs font-medium text-emerald-600 flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-up"></i> +8%
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Multi-platform media</p>
+                    </div>
+
+                    <!-- KPI 3 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-500">Penyelesaian Tugas</span>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-baseline justify-between">
+                            <h3 class="text-2xl font-bold text-slate-800">82%</h3>
+                            <span class="text-xs font-medium text-emerald-600 flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-up"></i> +5%
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Target bulan berjalan</p>
+                    </div>
+
+                    <!-- KPI 4 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-500">Program Aktif</span>
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-bullhorn"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-baseline justify-between">
+                            <h3 class="text-2xl font-bold text-slate-800">5</h3>
+                            <span class="text-xs font-medium text-slate-400">On Track</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Divisi internal</p>
+                    </div>
+                </div>
+
+                <!-- Charts Section Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Main Performance Chart -->
+                    <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Performa Publikasi Konten</h3>
+                                <p class="text-xs text-slate-400">Jumlah jangkauan vs postingan dalam 6 bulan terakhir</p>
+                            </div>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">Semester 2</span>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="contentChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Status Doughnut Chart -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-slate-800 text-sm">Status Progres Tugas</h3>
+                            <p class="text-xs text-slate-400">Distribusi seluruh program kerja</p>
+                        </div>
+                        <div class="flex-1 flex items-center justify-center relative min-h-[200px]">
+                            <canvas id="taskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-sm mb-4">Aktivitas Terbaru</h3>
+                    <div class="space-y-4" id="recent-activity-list">
+                        <!-- Activity Item -->
+                        <div class="flex items-start gap-3 text-xs">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-user-plus text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-slate-700"><span class="font-semibold text-slate-900">Ahmad Fauzi</span> telah ditambahkan sebagai <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">Pengurus</span></p>
+                                <span class="text-[10px] text-slate-400">10 menit yang lalu</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 text-xs">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-slate-700"><span class="font-semibold text-slate-900">Siti Rahmawati</span> menyelesaikan tugas <span class="font-medium text-slate-800">Desain Banner Webinar</span></p>
+                                <span class="text-[10px] text-slate-400">1 jam yang lalu</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 text-xs">
+                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-slate-700"><span class="font-semibold text-slate-900">Budi Santoso</span> memperbarui draf konten <span class="font-medium text-slate-800">Recruitment Tim Media</span></p>
+                                <span class="text-[10px] text-slate-400">3 jam yang lalu</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 2: MANAJEMEN ANGGOTA ================= -->
+            <section id="sec-members" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Manajemen Anggota</h2>
+                        <p class="text-xs text-slate-500">Kelola daftar anggota, hak akses, dan divisi organisasi.</p>
+                    </div>
+                    <button onclick="openModal('modal-member')" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition shadow-sm">
+                        <i class="fa-solid fa-user-plus"></i> Tambah Anggota
+                    </button>
+                </div>
+
+                <!-- Controls & Filters -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 justify-between items-center">
+                    <div class="relative w-full md:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="member-search" oninput="renderMembers()" placeholder="Cari nama atau email..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                        <span class="text-xs text-slate-500 font-medium shrink-0">Filter Peran:</span>
+                        <select id="member-role-filter" onchange="renderMembers()" class="bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500">
+                            <option value="Semua">Semua Peran</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Pengurus">Pengurus</option>
+                            <option value="Anggota">Anggota</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Member Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3.5">Anggota</th>
+                                    <th class="px-6 py-3.5">Peran</th>
+                                    <th class="px-6 py-3.5">Status</th>
+                                    <th class="px-6 py-3.5 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="member-table-body" class="divide-y divide-slate-100">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 3: MANAJEMEN KONTEN ================= -->
+            <section id="sec-content" class="tab-content hidden space-y-6">
+                <!-- Header & Action -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Manajemen Konten & Media</h2>
+                        <p class="text-xs text-slate-500">Rencanakan, kelola draf, dan pantau jadwal publikasi media sosial & artikel ACS.</p>
+                    </div>
+                    <button onclick="openModal('modal-content')" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Buat Konten Baru
+                    </button>
+                </div>
+
+                <!-- Quick Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold text-slate-400 uppercase">Total Konten</p>
+                            <h4 id="cnt-stat-total" class="text-lg font-bold text-slate-800 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold text-emerald-600 uppercase">Terbit</p>
+                            <h4 id="cnt-stat-terbit" class="text-lg font-bold text-slate-800 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold text-amber-600 uppercase">Draf</p>
+                            <h4 id="cnt-stat-draf" class="text-lg font-bold text-slate-800 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-pen-ruler"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold text-purple-600 uppercase">Ide / Rencana</p>
+                            <h4 id="cnt-stat-ide" class="text-lg font-bold text-slate-800 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
+                            <i class="fa-regular fa-lightbulb"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Bar -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 justify-between items-center">
+                    <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                        <button onclick="filterContentStatus('Semua')" data-status="Semua" class="content-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-brand-600 text-white transition">Semua</button>
+                        <button onclick="filterContentStatus('Terbit')" data-status="Terbit" class="content-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Terbit</button>
+                        <button onclick="filterContentStatus('Draf')" data-status="Draf" class="content-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Draf</button>
+                        <button onclick="filterContentStatus('Terjadwal')" data-status="Terjadwal" class="content-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Terjadwal</button>
+                        <button onclick="filterContentStatus('Ide')" data-status="Ide" class="content-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Ide</button>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-56">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="content-search" oninput="renderContent()" placeholder="Cari konten..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-brand-500">
+                        </div>
+                        <select id="content-platform-filter" onchange="renderContent()" class="bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-brand-500 shrink-0">
+                            <option value="Semua">Semua Platform</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="Website">Website</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="TikTok">TikTok</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Content Grid -->
+                <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic Content Cards -->
+                </div>
+            </section>
+
+            <!-- ================= MODULE 4: KANBAN BOARD TUGAS ================= -->
+            <section id="sec-kanban" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Tugas & Kanban Board</h2>
+                        <p class="text-xs text-slate-500">Kelola dan pantau alur kerja proyek organisasi ACS secara visual.</p>
+                    </div>
+                    <button onclick="openModal('modal-kanban')" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Tambah Tugas
+                    </button>
+                </div>
+
+                <!-- Kanban Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Column 1: To Do -->
+                    <div class="bg-slate-100/70 p-4 rounded-2xl border border-slate-200/80 flex flex-col max-h-[600px]">
+                        <div class="flex items-center justify-between mb-3 px-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                                <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider">To Do</h3>
+                            </div>
+                            <span id="count-todo" class="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-todo" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1 min-h-[120px]">
+                            <!-- Kanban cards rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Column 2: In Progress -->
+                    <div class="bg-amber-50/50 p-4 rounded-2xl border border-amber-200/60 flex flex-col max-h-[600px]">
+                        <div class="flex items-center justify-between mb-3 px-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                <h3 class="font-bold text-xs text-amber-800 uppercase tracking-wider">In Progress</h3>
+                            </div>
+                            <span id="count-inprogress" class="bg-amber-200 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-inprogress" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1 min-h-[120px]">
+                            <!-- Kanban cards rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Review -->
+                    <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-200/60 flex flex-col max-h-[600px]">
+                        <div class="flex items-center justify-between mb-3 px-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                <h3 class="font-bold text-xs text-blue-800 uppercase tracking-wider">Review</h3>
+                            </div>
+                            <span id="count-review" class="bg-blue-200 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-review" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1 min-h-[120px]">
+                            <!-- Kanban cards rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Column 4: Done -->
+                    <div class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-200/60 flex flex-col max-h-[600px]">
+                        <div class="flex items-center justify-between mb-3 px-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <h3 class="font-bold text-xs text-emerald-800 uppercase tracking-wider">Done</h3>
+                            </div>
+                            <span id="count-done" class="bg-emerald-200 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="col-done" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1 min-h-[120px]">
+                            <!-- Kanban cards rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 6: KALENDER DEADLINE ================= -->
+            <section id="sec-calendar" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Kalender & Tenggat Waktu</h2>
+                        <p class="text-xs text-slate-500">Pantau jadwal dan tenggat waktu seluruh tugas serta publikasi konten ACS.</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <!-- Toggle Bulanan / Mingguan -->
+                        <div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+                            <button id="cal-view-month" onclick="setCalViewMode('month')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm transition">Bulanan</button>
+                            <button id="cal-view-week" onclick="setCalViewMode('week')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 transition">Mingguan</button>
+                        </div>
+                        <div class="h-6 w-[1px] bg-slate-200 mx-1 hidden sm:block"></div>
+                        <button onclick="changeCalPeriod(-1)" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition text-xs">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span id="cal-month-year" class="font-bold text-sm text-slate-800 min-w-[150px] text-center">Oktober 2026</span>
+                        <button onclick="changeCalPeriod(1)" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition text-xs">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <button onclick="resetCalToday()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition ml-1">
+                            Hari Ini
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Main Grid Calendar -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <!-- Days of Week Header -->
+                        <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-400 mb-3 uppercase tracking-wider">
+                            <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
+                        </div>
+                        <!-- Calendar Days Grid -->
+                        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Day Deadlines Sidebar -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col">
+                        <div class="border-b border-slate-100 pb-3 mb-4">
+                            <h3 class="font-bold text-slate-800 text-sm">Deadline Pada Tanggal</h3>
+                            <p id="selected-date-title" class="text-xs text-brand-600 font-semibold mt-0.5">Pilih tanggal di kalender</p>
+                        </div>
+                        <div id="selected-date-items" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar max-h-[380px]">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 5: PERSONAL TO-DO LIST ================= -->
+            <section id="sec-todo" class="tab-content hidden max-w-3xl mx-auto space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Catatan & To-Do List Pribadi</h2>
+                    <p class="text-xs text-slate-500">Kelola tugas harian pribadi kamu agar tetap terorganisir.</p>
+                </div>
+
+                <!-- Input box -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <form onsubmit="addPersonalTodo(event)" class="flex gap-2">
+                        <input type="text" id="todo-input" placeholder="Tuliskan tugas harian baru..." class="flex-1 bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-500">
+                        <button type="submit" class="px-5 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition shrink-0">
+                            <i class="fa-solid fa-plus mr-1"></i> Tambah
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex justify-between text-xs font-semibold text-slate-700">
+                        <span>Progres Hari Ini</span>
+                        <span id="todo-progress-text">0 / 0 Selesai</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div id="todo-progress-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- List Items -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                    <ul id="personal-todo-list" class="divide-y divide-slate-100">
+                        <!-- Dynamic Todos -->
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Modal 1: Tambah Anggota -->
+    <div id="modal-member" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-sm text-slate-800">Tambah Anggota Baru</h3>
+                <button onclick="closeModal('modal-member')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="submitMember(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="m-name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                    <input type="email" id="m-email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Peran Organisasi</label>
+                    <select id="m-role" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                        <option value="Anggota">Anggota</option>
+                        <option value="Pengurus">Pengurus</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Keanggotaan</label>
+                    <select id="m-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                        <option value="Aktif">Aktif</option>
+                        <option value="Cuti">Cuti</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-member')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700">Simpan Anggota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Buat Konten -->
+    <div id="modal-content" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-sm text-slate-800">Buat Konten Baru</h3>
+                <button onclick="closeModal('modal-content')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="submitContent(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Konten</label>
+                    <input type="text" id="c-title" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi / Catatan Konten</label>
+                    <textarea id="c-desc" rows="2" placeholder="Catatan singkat ide atau poin konten..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Platform</label>
+                        <select id="c-platform" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                            <option value="Instagram">Instagram</option>
+                            <option value="Website">Website</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="TikTok">TikTok</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Status Draf</label>
+                        <select id="c-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                            <option value="Ide">Ide</option>
+                            <option value="Draf">Draf</option>
+                            <option value="Terjadwal">Terjadwal</option>
+                            <option value="Terbit">Terbit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Rencana Rilis</label>
+                        <input type="date" id="c-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Penulis / Pembuat</label>
+                        <input type="text" id="c-author" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-content')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700">Simpan Konten</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Tambah Tugas Kanban -->
+    <div id="modal-kanban" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-sm text-slate-800">Tambah Tugas Kanban</h3>
+                <button onclick="closeModal('modal-kanban')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="submitTask(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Tugas</label>
+                    <input type="text" id="t-title" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi Singkat</label>
+                    <textarea id="t-desc" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Kolom Status</label>
+                        <select id="t-col" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                            <option value="todo">To Do</option>
+                            <option value="inprogress">In Progress</option>
+                            <option value="review">Review</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Prioritas</label>
+                        <select id="t-priority" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                            <option value="Rendah">Rendah</option>
+                            <option value="Sedang">Sedang</option>
+                            <option value="Tinggi">Tinggi</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tenggat Waktu (Deadline)</label>
+                        <input type="date" id="t-deadline" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Penanggung Jawab</label>
+                        <input type="text" id="t-assignee" required placeholder="Contoh: Ahmad Fauzi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-kanban')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700">Buat Tugas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ================= STATE DATA MANAGEMENT =================
+        let membersData = [
+            { id: 1, name: "Ahmad Fauzi", email: "ahmad.fauzi@acs.or.id", role: "Admin", status: "Aktif", avatar: "https://i.pravatar.cc/100?img=11" },
+            { id: 2, name: "Siti Rahmawati", email: "siti.rahma@acs.or.id", role: "Pengurus", status: "Aktif", avatar: "https://i.pravatar.cc/100?img=5" },
+            { id: 3, name: "Budi Santoso", email: "budi.s@acs.or.id", role: "Anggota", status: "Aktif", avatar: "https://i.pravatar.cc/100?img=12" },
+            { id: 4, name: "Dina Mariana", email: "dina.m@acs.or.id", role: "Pengurus", status: "Cuti", avatar: "https://i.pravatar.cc/100?img=9" },
+            { id: 5, name: "Eko Prasetyo", email: "eko.p@acs.or.id", role: "Anggota", status: "Aktif", avatar: "https://i.pravatar.cc/100?img=13" }
+        ];
+
+        let contentData = [
+            { id: 1, title: "Panduan Kepemimpinan Organisasi Muda", desc: "Artikel edukatif seputar komunikasi efektif dan delegasi tugas dalam organisasi.", platform: "Website", date: "2026-10-20", status: "Terbit", author: "Ahmad Fauzi" },
+            { id: 2, title: "Highlight Kegiatan Bakti Sosial 2026", desc: "Recap video & foto dokumentasi penyaluran bantuan masyarakat.", platform: "Instagram", date: "2026-10-22", status: "Draf", author: "Siti Rahmawati" },
+            { id: 3, title: "Podcast Ep. 4: Inovasi Dalam Komunitas", desc: "Wawancara khusus bersama penggerak pemuda daerah.", platform: "YouTube", date: "2026-10-28", status: "Ide", author: "Budi Santoso" },
+            { id: 4, title: "Recruitment Terbuka Divisi Media & Kreatif", desc: "Video reels/short pengumuman pendaftaran anggota baru.", platform: "TikTok", date: "2026-10-18", status: "Terjadwal", author: "Dina Mariana" }
+        ];
+
+        let tasksData = [
+            { id: 1, title: "Penyusunan Proposal Sponsorship", desc: "Menyiapkan berkas pengajuan dana ke mitra utama.", column: "todo", priority: "Tinggi", assignee: "Ahmad Fauzi", deadline: "2026-10-18" },
+            { id: 2, title: "Desain Banner & Feeds Webinar", desc: "Visualisasi tema kepemimpinan digital.", column: "inprogress", priority: "Sedang", assignee: "Siti Rahmawati", deadline: "2026-10-20" },
+            { id: 3, title: "Audit Kas Keuangan Kuartal 3", desc: "Rekapitulasi pengeluaran dan pemasukan bulanan.", column: "review", priority: "Tinggi", assignee: "Budi Santoso", deadline: "2026-10-25" },
+            { id: 4, title: "Update Database Anggota Baru", desc: "Memasukkan data formulir pendaftaran.", column: "done", priority: "Rendah", assignee: "Eko Prasetyo", deadline: "2026-10-15" }
+        ];
+
+        // Calendar State
+        let currentCalDate = new Date(2026, 9, 15); // October 2026
+        let selectedCalDateStr = "2026-10-15";
+        let calViewMode = 'month'; // 'month' or 'week'
+
+        let activeContentFilter = "Semua";
+
+        let personalTodosData = [
+            { id: 1, text: "Review draf proposal event bulanan", completed: true },
+            { id: 2, text: "Hubungi pembicara webinar kepemimpinan", completed: false },
+            { id: 3, text: "Siapkan materi rapat evaluasi divisi", completed: false }
+        ];
+
+        // ================= NAVIGATION TAB SYSTEM =================
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Remove active styling on nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-600/20');
+                btn.classList.add('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/60');
+            });
+
+            // Show selected tab
+            const selectedSection = document.getElementById(`sec-${tabId}`);
+            if (selectedSection) selectedSection.classList.remove('hidden');
+
+            // Highlight nav button
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.remove('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/60');
+                activeNavBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-600/20');
+            }
+
+            // Close sidebar on mobile after click
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobile-overlay');
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // ================= MODAL CONTROLLER =================
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // ================= MODULE 1: CHART INITIALIZATION =================
+        let contentChartInstance = null;
+        let taskChartInstance = null;
+
+        function initCharts() {
+            // Content Chart (Line/Bar mixed)
+            const ctxContent = document.getElementById('contentChart').getContext('2d');
+            contentChartInstance = new Chart(ctxContent, {
+                type: 'line',
+                data: {
+                    labels: ['Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt'],
+                    datasets: [{
+                        label: 'Postingan Konten',
+                        data: [8, 12, 10, 15, 14, 18],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Task Doughnut Chart
+            const ctxTask = document.getElementById('taskChart').getContext('2d');
+            taskChartInstance = new Chart(ctxTask, {
+                type: 'doughnut',
+                data: {
+                    labels: ['To Do', 'In Progress', 'Review', 'Done'],
+                    datasets: [{
+                        data: [1, 1, 1, 1],
+                        backgroundColor: ['#94a3b8', '#f59e0b', '#3b82f6', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function updateOverviewKPIs() {
+            document.getElementById('kpi-total-members').innerText = membersData.length;
+            document.getElementById('kpi-total-content').innerText = contentData.length;
+
+            if (taskChartInstance) {
+                const todoCount = tasksData.filter(t => t.column === 'todo').length;
+                const inprogressCount = tasksData.filter(t => t.column === 'inprogress').length;
+                const reviewCount = tasksData.filter(t => t.column === 'review').length;
+                const doneCount = tasksData.filter(t => t.column === 'done').length;
+
+                taskChartInstance.data.datasets[0].data = [todoCount, inprogressCount, reviewCount, doneCount];
+                taskChartInstance.update();
+            }
+        }
+
+        // ================= MODULE 2: MEMBER MANAGEMENT =================
+        function renderMembers() {
+            const searchQuery = document.getElementById('member-search').value.toLowerCase();
+            const roleFilter = document.getElementById('member-role-filter').value;
+            const tbody = document.getElementById('member-table-body');
+            tbody.innerHTML = '';
+
+            const filtered = membersData.filter(m => {
+                const matchSearch = m.name.toLowerCase().includes(searchQuery) || m.email.toLowerCase().includes(searchQuery);
+                const matchRole = roleFilter === 'Semua' || m.role === roleFilter;
+                return matchSearch && matchRole;
+            });
+
+            filtered.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition";
+                
+                const roleBadgeClass = m.role === 'Admin' ? 'bg-purple-100 text-purple-700' :
+                                      m.role === 'Pengurus' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700';
+
+                const statusBadgeClass = m.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${m.avatar}" alt="" class="w-8 h-8 rounded-full object-cover">
+                            <div>
+                                <p class="font-semibold text-slate-800 text-xs">${m.name}</p>
+                                <p class="text-[11px] text-slate-400">${m.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold ${roleBadgeClass}">${m.role}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold ${statusBadgeClass}">${m.status}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="deleteMember(${m.id})" class="text-slate-400 hover:text-rose-600 transition p-1" title="Hapus">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateOverviewKPIs();
+        }
+
+        function submitMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('m-name').value;
+            const email = document.getElementById('m-email').value;
+            const role = document.getElementById('m-role').value;
+            const status = document.getElementById('m-status').value;
+
+            const newMember = {
+                id: Date.now(),
+                name,
+                email,
+                role,
+                status,
+                avatar: `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 60)}`
+            };
+
+            membersData.unshift(newMember);
+            renderMembers();
+            closeModal('modal-member');
+            e.target.reset();
+        }
+
+        function deleteMember(id) {
+            membersData = membersData.filter(m => m.id !== id);
+            renderMembers();
+        }
+
+        // ================= MODULE 3: CONTENT MANAGEMENT =================
+        function filterContentStatus(status) {
+            activeContentFilter = status;
+            document.querySelectorAll('.content-tab-btn').forEach(btn => {
+                if (btn.getAttribute('data-status') === status) {
+                    btn.classList.add('bg-brand-600', 'text-white');
+                    btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                } else {
+                    btn.classList.remove('bg-brand-600', 'text-white');
+                    btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+                }
+            });
+            renderContent();
+        }
+
+        function renderContent() {
+            const container = document.getElementById('content-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const searchQuery = (document.getElementById('content-search')?.value || '').toLowerCase();
+            const platformFilter = document.getElementById('content-platform-filter')?.value || 'Semua';
+
+            // Calculate stats
+            const statTotal = document.getElementById('cnt-stat-total');
+            const statTerbit = document.getElementById('cnt-stat-terbit');
+            const statDraf = document.getElementById('cnt-stat-draf');
+            const statIde = document.getElementById('cnt-stat-ide');
+
+            if (statTotal) statTotal.innerText = contentData.length;
+            if (statTerbit) statTerbit.innerText = contentData.filter(c => c.status === 'Terbit').length;
+            if (statDraf) statDraf.innerText = contentData.filter(c => c.status === 'Draf').length;
+            if (statIde) statIde.innerText = contentData.filter(c => c.status === 'Ide').length;
+
+            const filtered = contentData.filter(c => {
+                const matchStatus = activeContentFilter === 'Semua' || c.status === activeContentFilter;
+                const matchPlatform = platformFilter === 'Semua' || c.platform === platformFilter;
+                const matchSearch = c.title.toLowerCase().includes(searchQuery) || 
+                                    (c.desc && c.desc.toLowerCase().includes(searchQuery)) ||
+                                    c.author.toLowerCase().includes(searchQuery);
+                return matchStatus && matchPlatform && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400">
+                        <i class="fa-solid fa-newspaper text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-medium">Tidak ada konten yang sesuai dengan filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition group";
+
+                const statusColor = c.status === 'Terbit' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                                    c.status === 'Draf' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                    c.status === 'Terjadwal' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                    'bg-slate-100 text-slate-700 border-slate-200';
+
+                const platformIcon = c.platform === 'Instagram' ? 'fa-instagram text-pink-600' :
+                                     c.platform === 'YouTube' ? 'fa-youtube text-red-600' :
+                                     c.platform === 'TikTok' ? 'fa-tiktok text-slate-900' : 'fa-globe text-brand-600';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                <i class="fa-brands ${platformIcon}"></i> ${c.platform}
+                            </span>
+                            <div class="relative">
+                                <select onchange="changeContentStatus(${c.id}, this.value)" class="text-[10px] font-bold px-2 py-0.5 rounded-lg border cursor-pointer focus:outline-none ${statusColor}">
+                                    <option value="Ide" ${c.status === 'Ide' ? 'selected' : ''}>Ide</option>
+                                    <option value="Draf" ${c.status === 'Draf' ? 'selected' : ''}>Draf</option>
+                                    <option value="Terjadwal" ${c.status === 'Terjadwal' ? 'selected' : ''}>Terjadwal</option>
+                                    <option value="Terbit" ${c.status === 'Terbit' ? 'selected' : ''}>Terbit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1.5 line-clamp-2 hover:text-brand-600 transition cursor-pointer">${c.title}</h4>
+                        <p class="text-xs text-slate-500 line-clamp-2 mb-3">${c.desc || 'Belum ada deskripsi konten.'}</p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[9px]">
+                                ${c.author ? c.author.charAt(0) : 'A'}
+                            </div>
+                            <span class="text-[11px] text-slate-600 font-medium">${c.author}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px]"><i class="fa-regular fa-calendar mr-1"></i> ${c.date}</span>
+                            <button onclick="deleteContent(${c.id})" class="text-slate-300 hover:text-rose-600 transition p-1" title="Hapus Konten">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateOverviewKPIs();
+            renderCalendar();
+        }
+
+        function changeContentStatus(id, newStatus) {
+            const item = contentData.find(c => c.id === id);
+            if (item) {
+                item.status = newStatus;
+                renderContent();
+            }
+        }
+
+        function submitContent(e) {
+            e.preventDefault();
+            const title = document.getElementById('c-title').value;
+            const platform = document.getElementById('c-platform').value;
+            const date = document.getElementById('c-date').value;
+            const status = document.getElementById('c-status').value;
+            const author = document.getElementById('c-author').value;
+            const desc = document.getElementById('c-desc')?.value || '';
+
+            const newContent = { id: Date.now(), title, desc, platform, date, status, author };
+            contentData.unshift(newContent);
+            renderContent();
+            closeModal('modal-content');
+            e.target.reset();
+        }
+
+        function deleteContent(id) {
+            contentData = contentData.filter(c => c.id !== id);
+            renderContent();
+        }
+
+        // ================= MODULE 4: KANBAN BOARD =================
+        function renderKanban() {
+            const cols = {
+                todo: document.getElementById('col-todo'),
+                inprogress: document.getElementById('col-inprogress'),
+                review: document.getElementById('col-review'),
+                done: document.getElementById('col-done')
+            };
+
+            // Clear containers safely
+            Object.values(cols).forEach(el => {
+                if (el) el.innerHTML = '';
+            });
+
+            // Counter trackers
+            const counts = { todo: 0, inprogress: 0, review: 0, done: 0 };
+
+            tasksData.forEach(t => {
+                if (counts.hasOwnProperty(t.column)) {
+                    counts[t.column]++;
+                }
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 hover:shadow-md transition";
+
+                const priorityBadge = t.priority === 'Tinggi' ? 'bg-rose-100 text-rose-700' :
+                                      t.priority === 'Sedang' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700';
+
+                // Navigation helpers for moves
+                const prevCol = t.column === 'inprogress' ? 'todo' : t.column === 'review' ? 'inprogress' : t.column === 'done' ? 'review' : null;
+                const nextCol = t.column === 'todo' ? 'inprogress' : t.column === 'inprogress' ? 'review' : t.column === 'review' ? 'done' : null;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${priorityBadge}">${t.priority}</span>
+                        <button onclick="deleteTask(${t.id})" class="text-slate-300 hover:text-rose-600 text-xs">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <h4 class="font-semibold text-slate-800 text-xs">${t.title}</h4>
+                    <p class="text-[11px] text-slate-500 line-clamp-2">${t.desc}</p>
+                    <div class="flex items-center gap-1.5 text-[10px] text-rose-600 font-medium pt-1">
+                        <i class="fa-regular fa-clock"></i> Deadline: ${t.deadline || 'Tanpa deadline'}
+                    </div>
+                    <div class="pt-2 flex items-center justify-between text-xs border-t border-slate-100">
+                        <div class="flex items-center gap-1.5 text-slate-600">
+                            <div class="w-5 h-5 rounded-full bg-brand-100 text-brand-600 font-bold flex items-center justify-center text-[9px]">
+                                ${t.assignee ? t.assignee.charAt(0) : 'A'}
+                            </div>
+                            <span class="text-[11px] truncate max-w-[80px]">${t.assignee || 'Unassigned'}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            ${prevCol ? `<button onclick="moveTask(${t.id}, '${prevCol}')" class="p-1 text-slate-400 hover:text-slate-700" title="Pindah ke kiri"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>` : ''}
+                            ${nextCol ? `<button onclick="moveTask(${t.id}, '${nextCol}')" class="p-1 text-slate-400 hover:text-slate-700" title="Pindah ke kanan"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                if (cols[t.column]) cols[t.column].appendChild(card);
+            });
+
+            // Update column badges safely
+            const elTodo = document.getElementById('count-todo');
+            const elInprogress = document.getElementById('count-inprogress');
+            const elReview = document.getElementById('count-review');
+            const elDone = document.getElementById('count-done');
+
+            if (elTodo) elTodo.innerText = counts.todo;
+            if (elInprogress) elInprogress.innerText = counts.inprogress;
+            if (elReview) elReview.innerText = counts.review;
+            if (elDone) elDone.innerText = counts.done;
+
+            updateOverviewKPIs();
+            renderCalendar();
+        }
+
+        function moveTask(id, targetCol) {
+            const task = tasksData.find(t => t.id === id);
+            if (task) {
+                task.column = targetCol;
+                renderKanban();
+            }
+        }
+
+        function deleteTask(id) {
+            tasksData = tasksData.filter(t => t.id !== id);
+            renderKanban();
+        }
+
+        function submitTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('t-title').value;
+            const desc = document.getElementById('t-desc').value;
+            const column = document.getElementById('t-col').value;
+            const priority = document.getElementById('t-priority').value;
+            const assignee = document.getElementById('t-assignee').value;
+            const deadline = document.getElementById('t-deadline').value;
+
+            const newTask = { id: Date.now(), title, desc, column, priority, assignee, deadline };
+            tasksData.push(newTask);
+            renderKanban();
+            closeModal('modal-kanban');
+            e.target.reset();
+        }
+
+        // ================= MODULE 5: PERSONAL TO-DO LIST =================
+        function renderPersonalTodos() {
+            const container = document.getElementById('personal-todo-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const completedCount = personalTodosData.filter(t => t.completed).length;
+            const totalCount = personalTodosData.length;
+
+            const progressText = document.getElementById('todo-progress-text');
+            if (progressText) progressText.innerText = `${completedCount} / ${totalCount} Selesai`;
+
+            const progressBar = document.getElementById('todo-progress-bar');
+            if (progressBar) {
+                const percentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+                progressBar.style.width = `${percentage}%`;
+            }
+
+            personalTodosData.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = "py-3 flex items-center justify-between gap-3";
+                li.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <button onclick="togglePersonalTodo(${todo.id})" class="text-base text-slate-400 hover:text-brand-600 transition shrink-0">
+                            <i class="${todo.completed ? 'fa-solid fa-square-check text-emerald-600' : 'fa-regular fa-square'}"></i>
+                        </button>
+                        <span class="text-xs ${todo.completed ? 'line-through text-slate-400' : 'text-slate-700 font-medium'} truncate">${todo.text}</span>
+                    </div>
+                    <button onclick="deletePersonalTodo(${todo.id})" class="text-slate-300 hover:text-rose-600 transition text-xs shrink-0 p-1">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        function addPersonalTodo(e) {
+            e.preventDefault();
+            const input = document.getElementById('todo-input');
+            if (!input || !input.value.trim()) return;
+
+            personalTodosData.push({
+                id: Date.now(),
+                text: input.value.trim(),
+                completed: false
+            });
+
+            input.value = '';
+            renderPersonalTodos();
+        }
+
+        function togglePersonalTodo(id) {
+            const todo = personalTodosData.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                renderPersonalTodos();
+            }
+        }
+
+        function deletePersonalTodo(id) {
+            personalTodosData = personalTodosData.filter(t => t.id !== id);
+            renderPersonalTodos();
+        }
+
+        // ================= MODULE 6: CALENDAR LOGIC =================
+        function setCalViewMode(mode) {
+            calViewMode = mode;
+            const btnMonth = document.getElementById('cal-view-month');
+            const btnWeek = document.getElementById('cal-view-week');
+
+            if (mode === 'month') {
+                btnMonth.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm transition";
+                btnWeek.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 transition";
+            } else {
+                btnWeek.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm transition";
+                btnMonth.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 transition";
+            }
+
+            renderCalendar();
+        }
+
+        function changeCalPeriod(delta) {
+            if (calViewMode === 'month') {
+                currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+            } else {
+                currentCalDate.setDate(currentCalDate.getDate() + (delta * 7));
+            }
+            renderCalendar();
+        }
+
+        function changeCalMonth(delta) {
+            changeCalPeriod(delta);
+        }
+
+        function resetCalToday() {
+            currentCalDate = new Date(2026, 9, 15);
+            selectedCalDateStr = "2026-10-15";
+            renderCalendar();
+        }
+
+        function selectCalDate(dateStr) {
+            selectedCalDateStr = dateStr;
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const monthNamesFull = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+
+            if (calViewMode === 'month') {
+                const year = currentCalDate.getFullYear();
+                const month = currentCalDate.getMonth();
+                document.getElementById('cal-month-year').innerText = `${monthNamesFull[month]} ${year}`;
+
+                const firstDayIndex = new Date(year, month, 1).getDay();
+                const lastDay = new Date(year, month + 1, 0).getDate();
+
+                // Previous month padding days
+                for (let i = 0; i < firstDayIndex; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = "h-20 bg-slate-50/50 rounded-xl border border-transparent";
+                    grid.appendChild(emptyCell);
+                }
+
+                // Days of current month
+                for (let day = 1; day <= lastDay; day++) {
+                    const formattedMonth = String(month + 1).padStart(2, '0');
+                    const formattedDay = String(day).padStart(2, '0');
+                    const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
+
+                    const isToday = day === 15 && month === 9 && year === 2026;
+                    const isSelected = dateStr === selectedCalDateStr;
+
+                    const dueTasks = tasksData.filter(t => t.deadline === dateStr);
+                    const dueContents = contentData.filter(c => c.date === dateStr);
+
+                    const dayCell = document.createElement('div');
+                    dayCell.className = `h-20 p-1.5 rounded-xl border text-xs cursor-pointer flex flex-col justify-between transition ${
+                        isSelected ? 'ring-2 ring-brand-500 border-brand-500 bg-brand-50/30' :
+                        isToday ? 'border-brand-400 bg-blue-50/20' : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`;
+
+                    dayCell.onclick = () => selectCalDate(dateStr);
+
+                    let badgeHtml = '';
+                    if (dueTasks.length > 0) {
+                        badgeHtml += `<div class="text-[9px] bg-rose-100 text-rose-700 px-1 rounded truncate font-medium"><i class="fa-solid fa-list-check"></i> ${dueTasks.length} Tugas</div>`;
+                    }
+                    if (dueContents.length > 0) {
+                        badgeHtml += `<div class="text-[9px] bg-purple-100 text-purple-700 px-1 rounded truncate font-medium"><i class="fa-solid fa-newspaper"></i> ${dueContents.length} Konten</div>`;
+                    }
+
+                    dayCell.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-xs ${isToday ? 'w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700'}">${day}</span>
+                            ${(dueTasks.length + dueContents.length > 0) ? `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>` : ''}
+                        </div>
+                        <div class="space-y-0.5 overflow-hidden">
+                            ${badgeHtml}
+                        </div>
+                    `;
+
+                    grid.appendChild(dayCell);
+                }
+            } else {
+                // WEEKLY VIEW
+                const dayOfWeek = currentCalDate.getDay();
+                const startOfWeek = new Date(currentCalDate);
+                startOfWeek.setDate(currentCalDate.getDate() - dayOfWeek);
+
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+                document.getElementById('cal-month-year').innerText = `${startOfWeek.getDate()} ${monthNamesShort[startOfWeek.getMonth()]} - ${endOfWeek.getDate()} ${monthNamesShort[endOfWeek.getMonth()]} ${endOfWeek.getFullYear()}`;
+
+                for (let i = 0; i < 7; i++) {
+                    const thisDate = new Date(startOfWeek);
+                    thisDate.setDate(startOfWeek.getDate() + i);
+
+                    const year = thisDate.getFullYear();
+                    const month = thisDate.getMonth();
+                    const day = thisDate.getDate();
+
+                    const formattedMonth = String(month + 1).padStart(2, '0');
+                    const formattedDay = String(day).padStart(2, '0');
+                    const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
+
+                    const isToday = day === 15 && month === 9 && year === 2026;
+                    const isSelected = dateStr === selectedCalDateStr;
+
+                    const dueTasks = tasksData.filter(t => t.deadline === dateStr);
+                    const dueContents = contentData.filter(c => c.date === dateStr);
+
+                    const dayCell = document.createElement('div');
+                    dayCell.className = `min-h-[220px] p-2 rounded-xl border text-xs cursor-pointer flex flex-col justify-start transition ${
+                        isSelected ? 'ring-2 ring-brand-500 border-brand-500 bg-brand-50/20' :
+                        isToday ? 'border-brand-400 bg-blue-50/20' : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`;
+
+                    dayCell.onclick = () => selectCalDate(dateStr);
+
+                    let itemsHtml = '';
+                    dueTasks.forEach(t => {
+                        itemsHtml += `<div class="p-1.5 bg-rose-50 border border-rose-100 rounded-lg text-[10px] text-rose-800 font-medium line-clamp-2 leading-tight">
+                            <i class="fa-solid fa-list-check text-rose-600 mr-0.5"></i> ${t.title}
+                        </div>`;
+                    });
+                    dueContents.forEach(c => {
+                        itemsHtml += `<div class="p-1.5 bg-purple-50 border border-purple-100 rounded-lg text-[10px] text-purple-800 font-medium line-clamp-2 leading-tight">
+                            <i class="fa-solid fa-newspaper text-purple-600 mr-0.5"></i> ${c.title}
+                        </div>`;
+                    });
+
+                    if (dueTasks.length === 0 && dueContents.length === 0) {
+                        itemsHtml = `<div class="text-[10px] text-slate-300 italic py-2 text-center">Kosong</div>`;
+                    }
+
+                    dayCell.innerHTML = `
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-2">
+                            <span class="font-bold text-xs ${isToday ? 'w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700'}">${day}</span>
+                            <span class="text-[10px] text-slate-400">${monthNamesShort[month]}</span>
+                        </div>
+                        <div class="space-y-1.5 overflow-y-auto custom-scrollbar flex-1 max-h-[160px]">
+                            ${itemsHtml}
+                        </div>
+                    `;
+
+                    grid.appendChild(dayCell);
+                }
+            }
+
+            renderSelectedDateItems();
+        }
+
+        function changeCalMonth(delta) {
+            currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function resetCalToday() {
+            currentCalDate = new Date(2026, 9, 15);
+            selectedCalDateStr = "2026-10-15";
+            renderCalendar();
+        }
+
+        function selectCalDate(dateStr) {
+            selectedCalDateStr = dateStr;
+            renderCalendar();
+        }
+
+        function renderSelectedDateItems() {
+            const titleEl = document.getElementById('selected-date-title');
+            const container = document.getElementById('selected-date-items');
+            if (!container) return;
+
+            titleEl.innerText = selectedCalDateStr;
+            container.innerHTML = '';
+
+            const tasks = tasksData.filter(t => t.deadline === selectedCalDateStr);
+            const contents = contentData.filter(c => c.date === selectedCalDateStr);
+
+            if (tasks.length === 0 && contents.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-regular fa-calendar-check text-2xl mb-2"></i>
+                        <p class="text-xs">Tidak ada deadline pada tanggal ini.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tasks.forEach(t => {
+                const item = document.createElement('div');
+                item.className = "p-3 rounded-xl border border-rose-100 bg-rose-50/40 space-y-1";
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="font-bold text-rose-700 uppercase tracking-wider"><i class="fa-solid fa-list-check mr-1"></i> Tugas Kanban</span>
+                        <span class="px-1.5 py-0.5 rounded bg-white text-slate-600 font-semibold">${t.column}</span>
+                    </div>
+                    <h4 class="font-bold text-xs text-slate-800">${t.title}</h4>
+                    <p class="text-[11px] text-slate-500">${t.desc}</p>
+                    <p class="text-[10px] text-slate-400 pt-1"><i class="fa-regular fa-user mr-1"></i> ${t.assignee}</p>
+                `;
+                container.appendChild(item);
+            });
+
+            contents.forEach(c => {
+                const item = document.createElement('div');
+                item.className = "p-3 rounded-xl border border-purple-100 bg-purple-50/40 space-y-1";
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="font-bold text-purple-700 uppercase tracking-wider"><i class="fa-solid fa-newspaper mr-1"></i> Konten Rilis</span>
+                        <span class="px-1.5 py-0.5 rounded bg-white text-slate-600 font-semibold">${c.platform}</span>
+                    </div>
+                    <h4 class="font-bold text-xs text-slate-800">${c.title}</h4>
+                    <p class="text-[10px] text-slate-400 pt-1"><i class="fa-regular fa-user mr-1"></i> ${c.author}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ================= INITIALIZATION =================
+        window.onload = function() {
+            initCharts();
+            renderMembers();
+            renderContent();
+            renderKanban();
+            renderCalendar();
+            renderPersonalTodos();
+
+            // Set dynamic date in header
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('current-date-str').innerText = new Date(2026, 9, 15).toLocaleDateString('id-ID', options);
+        };
+    </script>
+</body>
+</html>
