@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Manajemen Organisasi - ACS</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="Dynamic ACS Blue-Yellow Emblem_2.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        // Monday.com inspired status colors
+                        mstatus: {
+                            done: '#00c875',
+                            working: '#fdab3d',
+                            stuck: '#e2445c',
+                            todo: '#c4c4c4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .status-select {
+            appearance: none;
+            -webkit-appearance: none;
+            text-align: center;
+            text-align-last: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .status-select:hover { filter: brightness(0.9); }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans antialiased overflow-hidden flex flex-col md:flex-row relative">
+
+    <!-- OVERLAY MOBILE SIDEBAR -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shrink-0">
+        <!-- Logo Header -->
+        <div class="h-16 flex items-center justify-between px-5 bg-slate-950/60 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md shrink-0">
+                    <img src="Dynamic ACS Blue-Yellow Emblem_2.png" alt="ACS Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-base tracking-wider leading-tight">ACS</h1>
+                    <p class="text-[11px] text-slate-400 leading-none">Dashboard Organisasi</p>
+                </div>
+            </div>
+            <button class="md:hidden text-slate-400 hover:text-white" onclick="toggleSidebar()">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Utama</p>
+            
+            <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-white bg-brand-600 shadow-md shadow-brand-600/20">
+                <i class="fa-solid fa-chart-pie w-5 text-center text-base"></i> Overview & Statistik
+            </button>
+            <button onclick="switchTab('projects')" id="nav-projects" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-layer-group w-5 text-center text-base"></i> Proyek & Tugas (Board)
+            </button>
+            <button onclick="switchTab('members')" id="nav-members" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-users w-5 text-center text-base"></i> Manajemen Anggota
+            </button>
+            <button onclick="switchTab('content')" id="nav-content" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-newspaper w-5 text-center text-base"></i> Manajemen Konten
+            </button>
+            <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-calendar-days w-5 text-center text-base"></i> Kalender Deadline
+            </button>
+            <button onclick="switchTab('todo')" id="nav-todo" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                <i class="fa-solid fa-square-check w-5 text-center text-base"></i> Personal To-Do List
+            </button>
+        </nav>
+
+        <!-- User Brief Profile -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+            <div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/40">
+                <img src="https://i.pravatar.cc/100?img=5" alt="Avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-brand-500">
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-white truncate">Siti Rahmawati</p>
+                    <p class="text-[11px] text-slate-400 truncate">Ketua Organisasi</p>
+                </div>
+                <button class="text-slate-400 hover:text-slate-200 p-1" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+        
+        <!-- HEADER TOP BAR -->
+        <header class="h-16 bg-white border-b border-slate-200 px-4 md:px-8 flex items-center justify-between shrink-0 z-10">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg hover:bg-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="relative hidden sm:block w-64 lg:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" placeholder="Cari di seluruh dashboard..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-transparent rounded-xl text-xs sm:text-sm focus:outline-none focus:bg-white focus:border-brand-500 transition-all">
+                </div>
+            </div>
+
+            <!-- Header Right Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Notifications -->
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50">
+                        <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                            <h4 class="font-semibold text-xs text-slate-800">Notifikasi Terbaru</h4>
+                            <span class="text-[10px] text-brand-600 font-medium cursor-pointer">Tandai dibaca</span>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                            <a href="#" class="block p-3 hover:bg-slate-50 transition">
+                                <p class="text-xs text-slate-700"><span class="font-semibold">Budi</span> menyelesaikan tugas LPJ</p>
+                                <span class="text-[10px] text-slate-400">10 menit yang lalu</span>
+                            </a>
+                            <a href="#" class="block p-3 hover:bg-slate-50 transition">
+                                <p class="text-xs text-slate-700">Draf artikel baru siap untuk ditinjau</p>
+                                <span class="text-[10px] text-slate-400">1 jam yang lalu</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-slate-200"></div>
+
+                <!-- Date display -->
+                <div class="hidden lg:flex items-center gap-2 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span id="current-date-str">Memuat tanggal...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY CONTAINER -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 bg-slate-50 relative">
+
+            <!-- ================= MODULE 1: OVERVIEW & STATISTIK ================= -->
+            <section id="sec-overview" class="tab-content space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Ringkasan Organisasi</h2>
+                        <p class="text-xs text-slate-500">Pantau perkembangan performa, tim, dan proyek utama secara langsung.</p>
+                    </div>
+                    <button onclick="switchTab('projects')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-medium hover:bg-brand-700 transition shadow-sm">
+                        <i class="fa-solid fa-arrow-right"></i> Buka Board Proyek
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="flex items-center justify-between"><span class="text-xs font-semibold text-slate-500">Total Anggota</span><div class="w-10 h-10 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center text-lg"><i class="fa-solid fa-users"></i></div></div><div class="mt-4 flex items-baseline justify-between"><h3 class="text-2xl font-bold text-slate-800" id="kpi-total-members">0</h3></div></div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="flex items-center justify-between"><span class="text-xs font-semibold text-slate-500">Konten Terbit</span><div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg"><i class="fa-solid fa-photo-film"></i></div></div><div class="mt-4 flex items-baseline justify-between"><h3 class="text-2xl font-bold text-slate-800" id="kpi-total-content">0</h3></div></div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="flex items-center justify-between"><span class="text-xs font-semibold text-slate-500">Tugas Selesai</span><div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg"><i class="fa-solid fa-circle-check"></i></div></div><div class="mt-4 flex items-baseline justify-between"><h3 class="text-2xl font-bold text-slate-800">82%</h3></div></div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="flex items-center justify-between"><span class="text-xs font-semibold text-slate-500">Tugas Aktif</span><div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg"><i class="fa-solid fa-bullhorn"></i></div></div><div class="mt-4 flex items-baseline justify-between"><h3 class="text-2xl font-bold text-slate-800" id="kpi-active-tasks">0</h3></div></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 text-sm">Performa Publikasi Konten</h3>
+                        </div>
+                        <div class="h-64"><canvas id="contentChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                        <div class="mb-4"><h3 class="font-bold text-slate-800 text-sm">Status Progres Tugas</h3></div>
+                        <div class="flex-1 flex items-center justify-center relative min-h-[200px]"><canvas id="taskChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 2: ANGGOTA ================= -->
+            <section id="sec-members" class="tab-content hidden space-y-6">
+                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h2 class="text-xl font-bold text-slate-800">Manajemen Anggota</h2>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
+                    <table class="w-full text-left text-xs"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold"><tr><th class="px-6 py-3.5">Anggota</th><th class="px-6 py-3.5">Peran</th><th class="px-6 py-3.5">Status</th></tr></thead>
+                    <tbody id="member-table-body" class="divide-y divide-slate-100"></tbody></table>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 3: KONTEN ================= -->
+            <section id="sec-content" class="tab-content hidden space-y-6">
+                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h2 class="text-xl font-bold text-slate-800">Manajemen Konten & Media</h2>
+                </div>
+                <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <!-- ================= MODULE 4: MONDAY.COM STYLE PROJECT BOARDS ================= -->
+            <section id="sec-projects" class="tab-content hidden space-y-4">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-cubes text-brand-600"></i> Board Proyek Utama
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Kelola tugas, delegasi, dan pantau status pengerjaan secara real-time.</p>
+                    </div>
+                    
+                    <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+                        <button id="btn-view-table" onclick="setProjectView('table')" class="px-4 py-1.5 rounded text-xs font-semibold shadow-sm bg-white text-slate-800 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-table-list"></i> Main Table
+                        </button>
+                        <button id="btn-view-kanban" onclick="setProjectView('kanban')" class="px-4 py-1.5 rounded text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-clipboard-list"></i> Kanban
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center py-2">
+                    <div class="relative w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" placeholder="Cari tugas..." class="w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:border-brand-500">
+                    </div>
+                    <button onclick="openModal('modal-task')" class="px-4 py-2 bg-brand-600 text-white rounded-lg text-xs font-semibold hover:bg-brand-700 shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Tambah Item
+                    </button>
+                </div>
+
+                <!-- VIEW 1: MONDAY.COM STYLE TABLE -->
+                <div id="project-view-table" class="space-y-6">
+                    <!-- Group 1: Target Bulan Ini -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-4 py-3 flex items-center gap-2 bg-slate-50 border-b border-slate-200">
+                            <i class="fa-solid fa-caret-down text-brand-600"></i>
+                            <h3 class="font-bold text-sm text-brand-600">Target Bulan Ini</h3>
+                            <span class="text-xs text-slate-400 ml-2" id="count-group-current">0 Items</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs whitespace-nowrap">
+                                <thead class="border-b border-slate-100 text-slate-500">
+                                    <tr>
+                                        <th class="px-4 py-2.5 font-medium w-8"></th>
+                                        <th class="px-4 py-2.5 font-medium min-w-[250px]">Nama Item (Tugas)</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-32">Penanggung Jawab</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-36">Status</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-36">Prioritas</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-32">Timeline / Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-group-current" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Group 2: Backlog / Mendatang -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-4 py-3 flex items-center gap-2 bg-slate-50 border-b border-slate-200">
+                            <i class="fa-solid fa-caret-down text-slate-600"></i>
+                            <h3 class="font-bold text-sm text-slate-700">Backlog / Mendatang</h3>
+                            <span class="text-xs text-slate-400 ml-2" id="count-group-backlog">0 Items</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs whitespace-nowrap">
+                                <thead class="border-b border-slate-100 text-slate-500">
+                                    <tr>
+                                        <th class="px-4 py-2.5 font-medium w-8"></th>
+                                        <th class="px-4 py-2.5 font-medium min-w-[250px]">Nama Item (Tugas)</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-32">Penanggung Jawab</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-36">Status</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-36">Prioritas</th>
+                                        <th class="px-4 py-2.5 font-medium text-center w-32">Timeline / Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-group-backlog" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: TRADITIONAL KANBAN -->
+                <div id="project-view-kanban" class="hidden grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                    <div class="bg-slate-100/70 p-3 rounded-xl border border-slate-200 flex flex-col h-[500px]">
+                        <h3 class="font-bold text-xs text-slate-600 mb-3 uppercase tracking-wider text-center py-1 bg-slate-200 rounded">To Do / Blank</h3>
+                        <div id="kanban-todo" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                    <div class="bg-slate-100/70 p-3 rounded-xl border border-slate-200 flex flex-col h-[500px]">
+                        <h3 class="font-bold text-xs text-white mb-3 uppercase tracking-wider text-center py-1 bg-mstatus-working rounded">Working on it</h3>
+                        <div id="kanban-working" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                    <div class="bg-slate-100/70 p-3 rounded-xl border border-slate-200 flex flex-col h-[500px]">
+                        <h3 class="font-bold text-xs text-white mb-3 uppercase tracking-wider text-center py-1 bg-mstatus-stuck rounded">Stuck</h3>
+                        <div id="kanban-stuck" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                    <div class="bg-slate-100/70 p-3 rounded-xl border border-slate-200 flex flex-col h-[500px]">
+                        <h3 class="font-bold text-xs text-white mb-3 uppercase tracking-wider text-center py-1 bg-mstatus-done rounded">Done</h3>
+                        <div id="kanban-done" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= MODULE 5: TODO LIST ================= -->
+            <section id="sec-todo" class="tab-content hidden max-w-3xl mx-auto space-y-6">
+                <h2 class="text-xl font-bold text-slate-800">Catatan & To-Do List Pribadi</h2>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4"><ul id="personal-todo-list" class="divide-y divide-slate-100"></ul></div>
+            </section>
+            
+            <!-- ================= MODULE 6: CALENDAR ================= -->
+            <section id="sec-calendar" class="tab-content hidden space-y-6">
+                <h2 class="text-xl font-bold text-slate-800">Kalender & Tenggat Waktu</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5"></div></div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col"><div id="selected-date-items" class="flex-1 space-y-3 overflow-y-auto custom-scrollbar max-h-[380px]"></div></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ================= SLIDE-OVER PANEL: TASK DETAILS ================= -->
+    <div id="slideover-task" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out border-l border-slate-200 flex flex-col">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-bold text-sm text-slate-800">Updates & Detail Tugas</h3>
+            <button onclick="closeTaskSlideover()" class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+            <div>
+                <h2 id="slide-task-title" class="text-xl font-bold text-slate-800 leading-tight">Nama Tugas</h2>
+                <div class="flex items-center gap-4 mt-3 text-xs text-slate-500">
+                    <span id="slide-task-status" class="px-2 py-1 rounded text-white font-semibold">Status</span>
+                    <span id="slide-task-date"><i class="fa-regular fa-calendar mr-1"></i> Date</span>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Deskripsi Singkat</label>
+                <p id="slide-task-desc" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">Deskripsi...</p>
+            </div>
+            <hr class="border-slate-100">
+            <div>
+                <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3 block">Updates (Komentar)</label>
+                <div class="border border-slate-200 rounded-xl overflow-hidden focus-within:border-brand-500 transition-colors bg-white">
+                    <textarea rows="2" placeholder="Tulis update tentang tugas ini..." class="w-full text-xs p-3 focus:outline-none resize-none"></textarea>
+                    <div class="bg-slate-50 px-3 py-2 border-t border-slate-100 flex justify-end">
+                        <button class="bg-brand-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-brand-700">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slideover-overlay" class="fixed inset-0 bg-slate-900/20 z-40 hidden backdrop-blur-[1px] transition-opacity" onclick="closeTaskSlideover()"></div>
+
+    <!-- ================= MODALS ================= -->
+    
+    <!-- Modal: Popup Urgent Task -->
+    <div id="modal-urgent-task" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="bg-rose-500 px-6 py-4 flex items-center justify-between">
+                <h3 class="font-bold text-white flex items-center gap-2 text-sm"><i class="fa-solid fa-triangle-exclamation"></i> Tenggat Waktu Terdekat</h3>
+                <button onclick="closeModal('modal-urgent-task')" class="text-rose-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-rose-50 rounded-full text-rose-500 flex items-center justify-center text-3xl mx-auto mb-4 border-4 border-white shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <h4 id="urgent-task-title" class="text-lg font-bold text-slate-800 mb-2 leading-tight">Nama Tugas</h4>
+                <p class="text-xs text-slate-500 mb-4 px-2">Harus segera diselesaikan oleh <span id="urgent-task-pic" class="font-bold text-slate-700">PIC</span> sebelum:</p>
+                <div class="inline-flex items-center gap-2 bg-rose-50 border border-rose-100 px-4 py-2 rounded-xl text-rose-600 font-bold mb-6 text-sm">
+                    <i class="fa-regular fa-calendar"></i><span id="urgent-task-deadline">Tanggal</span>
+                </div>
+                <button onclick="closeModal('modal-urgent-task')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Tutup Notifikasi</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-task" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-sm text-slate-800">Tambah Item / Tugas</h3>
+                <button onclick="closeModal('modal-task')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="submitTask(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Item</label>
+                    <input type="text" id="t-title" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Group (Kelompok)</label>
+                    <select id="t-group" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                        <option value="Target Bulan Ini">Target Bulan Ini</option>
+                        <option value="Backlog / Mendatang">Backlog / Mendatang</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Status Awal</label>
+                        <select id="t-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                            <option value="To Do">To Do / Kosong</option>
+                            <option value="Working on it">Working on it</option>
+                            <option value="Stuck">Stuck</option>
+                            <option value="Done">Done</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Prioritas</label>
+                        <select id="t-priority" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                            <option value="Rendah">Rendah</option>
+                            <option value="Sedang">Sedang</option>
+                            <option value="Tinggi">Tinggi</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Timeline / Tanggal</label>
+                        <input type="date" id="t-deadline" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Penanggung Jawab</label>
+                        <input type="text" id="t-assignee" required placeholder="Contoh: Ahmad Fauzi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-task')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700">Simpan Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ================= STATE DATA MANAGEMENT =================
+        let membersData = [
+            { id: 1, name: "Ahmad Fauzi", email: "ahmad.fauzi@acs.or.id", role: "Admin", status: "Aktif", avatar: "https://i.pravatar.cc/100?img=11" },
+            { id: 2, name: "Siti Rahmawati", email: "siti.rahmawati@acs.or.id", role: "Pengurus", status: "Aktif", avatar: "https://i.pravatar.cc/100?img=5" }
+        ];
+
+        let contentData = [
+            { id: 1, title: "Panduan Kepemimpinan Digital", platform: "Website", date: "2026-10-20", status: "Terbit", author: "Ahmad Fauzi" },
+            { id: 2, title: "Post Instagram Webinar", platform: "Instagram", date: "2026-10-25", status: "Draf", author: "Siti Rahmawati" }
+        ];
+
+        let tasksData = [
+            { id: 1, title: "Penyusunan Proposal Sponsorship", desc: "Menyiapkan berkas pengajuan dana ke mitra utama.", status: "Working on it", priority: "Tinggi", assignee: "Ahmad Fauzi", deadline: "2026-10-18", group: "Target Bulan Ini" },
+            { id: 2, title: "Desain Banner & Feeds Webinar", desc: "Visualisasi tema kepemimpinan digital.", status: "Stuck", priority: "Sedang", assignee: "Siti Rahmawati", deadline: "2026-10-20", group: "Target Bulan Ini" },
+            { id: 3, title: "Audit Kas Keuangan Kuartal 3", desc: "Rekapitulasi pengeluaran dan pemasukan bulanan.", status: "Done", priority: "Tinggi", assignee: "Budi Santoso", deadline: "2026-10-25", group: "Target Bulan Ini" },
+            { id: 4, title: "Update Database Anggota Baru", desc: "Memasukkan data formulir pendaftaran.", status: "To Do", priority: "Rendah", assignee: "Eko Prasetyo", deadline: "2026-11-05", group: "Backlog / Mendatang" }
+        ];
+
+        let personalTodosData = [
+            { id: 1, text: "Beli kopi untuk tim", done: false },
+            { id: 2, text: "Review proposal acara bulan depan", done: true }
+        ];
+
+        // Colors Mapping
+        const statusColors = {
+            'Done': 'bg-[#00c875] text-white',
+            'Working on it': 'bg-[#fdab3d] text-white',
+            'Stuck': 'bg-[#e2445c] text-white',
+            'To Do': 'bg-[#c4c4c4] text-white'
+        };
+
+        const priorityColors = {
+            'Tinggi': 'bg-purple-500 text-white',
+            'Sedang': 'bg-blue-400 text-white',
+            'Rendah': 'bg-slate-300 text-slate-700'
+        };
+
+        // ================= GENERAL UI LOGIC =================
+        function toggleNotifications() {
+            document.getElementById('notification-dropdown').classList.toggle('hidden');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-600/20');
+                btn.classList.add('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/60');
+            });
+
+            const selectedSection = document.getElementById(`sec-${tabId}`);
+            if (selectedSection) selectedSection.classList.remove('hidden');
+
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.remove('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/60');
+                activeNavBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-600/20');
+            }
+
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('mobile-overlay').classList.add('hidden');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('mobile-overlay').classList.toggle('hidden');
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+
+        // ================= MODULE 1: RENDER STATS =================
+        function renderOverviewStats() {
+            document.getElementById('kpi-total-members').innerText = membersData.length;
+            document.getElementById('kpi-total-content').innerText = contentData.length;
+            document.getElementById('kpi-active-tasks').innerText = tasksData.filter(t => t.status !== 'Done').length;
+        }
+
+        // ================= MODULE 2: RENDER MEMBERS =================
+        function renderMembers() {
+            const tbody = document.getElementById('member-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            membersData.forEach(m => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${m.avatar}" class="w-8 h-8 rounded-full object-cover">
+                                <div><p class="font-semibold text-slate-800">${m.name}</p><p class="text-[10px] text-slate-400">${m.email}</p></div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">${m.role}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase">${m.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ================= MODULE 3: RENDER CONTENT =================
+        function renderContent() {
+            const grid = document.getElementById('content-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            contentData.forEach(c => {
+                grid.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">${c.platform}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.status === 'Terbit' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${c.status}</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800">${c.title}</h4>
+                        <div class="mt-auto pt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100">
+                            <span><i class="fa-solid fa-user mr-1"></i> ${c.author}</span>
+                            <span><i class="fa-regular fa-calendar mr-1"></i> ${c.date}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ================= MODULE 4: MONDAY.COM STYLE PROJECTS =================
+        function setProjectView(view) {
+            const table = document.getElementById('project-view-table');
+            const kanban = document.getElementById('project-view-kanban');
+            const btnTable = document.getElementById('btn-view-table');
+            const btnKanban = document.getElementById('btn-view-kanban');
+
+            if(view === 'table') {
+                table.classList.remove('hidden'); kanban.classList.add('hidden');
+                btnTable.className = "px-4 py-1.5 rounded text-xs font-semibold shadow-sm bg-white text-slate-800 flex items-center gap-1.5 transition";
+                btnKanban.className = "px-4 py-1.5 rounded text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition";
+            } else {
+                table.classList.add('hidden'); kanban.classList.remove('hidden');
+                btnKanban.className = "px-4 py-1.5 rounded text-xs font-semibold shadow-sm bg-white text-slate-800 flex items-center gap-1.5 transition";
+                btnTable.className = "px-4 py-1.5 rounded text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition";
+            }
+        }
+
+        function openTaskDetails(taskId) {
+            const task = tasksData.find(t => t.id === taskId);
+            if(!task) return;
+            document.getElementById('slide-task-title').innerText = task.title;
+            document.getElementById('slide-task-desc').innerText = task.desc || "Tidak ada deskripsi detail.";
+            document.getElementById('slide-task-date').innerHTML = `<i class="fa-regular fa-calendar mr-1"></i> ${task.deadline}`;
+            
+            const statusBadge = document.getElementById('slide-task-status');
+            statusBadge.innerText = task.status;
+            statusBadge.className = `px-3 py-1 rounded text-[11px] font-semibold ${statusColors[task.status]}`;
+
+            document.getElementById('slideover-task').classList.remove('translate-x-full');
+            document.getElementById('slideover-overlay').classList.remove('hidden');
+        }
+
+        function closeTaskSlideover() {
+            document.getElementById('slideover-task').classList.add('translate-x-full');
+            document.getElementById('slideover-overlay').classList.add('hidden');
+        }
+
+        function renderProjects() {
+            renderTableGroup('Target Bulan Ini', 'table-group-current', 'count-group-current');
+            renderTableGroup('Backlog / Mendatang', 'table-group-backlog', 'count-group-backlog');
+            renderKanbanView();
+        }
+
+        function renderTableGroup(groupName, tbodyId, countId) {
+            const tbody = document.getElementById(tbodyId);
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const items = tasksData.filter(t => t.group === groupName);
+            document.getElementById(countId).innerText = `${items.length} Items`;
+
+            items.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "group hover:bg-slate-50/70 transition border-l-4 border-transparent hover:border-slate-300";
+                let leftColor = t.status === 'Done' ? 'bg-[#00c875]' : t.status === 'Working on it' ? 'bg-[#fdab3d]' : t.status === 'Stuck' ? 'bg-[#e2445c]' : 'bg-[#c4c4c4]';
+
+                tr.innerHTML = `
+                    <td class="px-0 py-0"><div class="w-1.5 h-10 ${leftColor} rounded-r-md"></div></td>
+                    <td class="px-4 py-2 font-medium text-slate-700 cursor-pointer hover:text-brand-600 transition" onclick="openTaskDetails(${t.id})">
+                        <div class="flex items-center gap-2"><i class="fa-regular fa-message text-[10px] text-slate-300 group-hover:text-slate-500"></i>${t.title}</div>
+                    </td>
+                    <td class="px-4 py-2 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <div class="w-6 h-6 rounded-full bg-blue-100 text-brand-600 font-bold flex items-center justify-center text-[9px] shrink-0">${t.assignee.charAt(0)}</div>
+                            <span class="truncate max-w-[80px]">${t.assignee}</span>
+                        </div>
+                    </td>
+                    <td class="px-0 py-0 h-full">
+                        <select onchange="changeTaskStatus(${t.id}, this.value)" class="status-select w-full h-10 text-[11px] font-bold outline-none border-x border-slate-100 ${statusColors[t.status]}">
+                            <option class="bg-white text-slate-800" value="Working on it" ${t.status === 'Working on it' ? 'selected' : ''}>Working on it</option>
+                            <option class="bg-white text-slate-800" value="Stuck" ${t.status === 'Stuck' ? 'selected' : ''}>Stuck</option>
+                            <option class="bg-white text-slate-800" value="Done" ${t.status === 'Done' ? 'selected' : ''}>Done</option>
+                            <option class="bg-white text-slate-800" value="To Do" ${t.status === 'To Do' ? 'selected' : ''}>To Do</option>
+                        </select>
+                    </td>
+                    <td class="px-0 py-0 h-full">
+                        <select onchange="changeTaskPriority(${t.id}, this.value)" class="status-select w-full h-10 text-[11px] font-bold outline-none border-r border-slate-100 ${priorityColors[t.priority]}">
+                            <option class="bg-white text-slate-800" value="Tinggi" ${t.priority === 'Tinggi' ? 'selected' : ''}>Tinggi</option>
+                            <option class="bg-white text-slate-800" value="Sedang" ${t.priority === 'Sedang' ? 'selected' : ''}>Sedang</option>
+                            <option class="bg-white text-slate-800" value="Rendah" ${t.priority === 'Rendah' ? 'selected' : ''}>Rendah</option>
+                        </select>
+                    </td>
+                    <td class="px-4 py-2 text-center text-slate-500 border-r border-slate-100">${t.deadline}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderKanbanView() {
+            const cols = {
+                'To Do': document.getElementById('kanban-todo'),
+                'Working on it': document.getElementById('kanban-working'),
+                'Stuck': document.getElementById('kanban-stuck'),
+                'Done': document.getElementById('kanban-done')
+            };
+
+            Object.values(cols).forEach(el => { if(el) el.innerHTML = ''; });
+
+            tasksData.forEach(t => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:shadow-md transition";
+                card.onclick = (e) => { if(e.target.tagName.toLowerCase() !== 'select') openTaskDetails(t.id); };
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${priorityColors[t.priority]}">${t.priority}</span>
+                        <select onclick="event.stopPropagation()" onchange="changeTaskStatus(${t.id}, this.value)" class="text-[9px] font-bold rounded px-1 outline-none ${statusColors[t.status]}">
+                            <option class="bg-white text-slate-800" value="To Do" ${t.status === 'To Do' ? 'selected' : ''}>To Do</option>
+                            <option class="bg-white text-slate-800" value="Working on it" ${t.status === 'Working on it' ? 'selected' : ''}>Working</option>
+                            <option class="bg-white text-slate-800" value="Stuck" ${t.status === 'Stuck' ? 'selected' : ''}>Stuck</option>
+                            <option class="bg-white text-slate-800" value="Done" ${t.status === 'Done' ? 'selected' : ''}>Done</option>
+                        </select>
+                    </div>
+                    <h4 class="font-semibold text-xs text-slate-800 leading-tight mb-1">${t.title}</h4>
+                    <div class="flex items-center gap-1.5 mt-3 text-[10px] text-slate-500">
+                        <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600">${t.assignee.charAt(0)}</div>
+                        <span>${t.deadline}</span>
+                    </div>
+                `;
+                if (cols[t.status]) cols[t.status].appendChild(card);
+            });
+        }
+
+        function changeTaskStatus(id, newStatus) {
+            const task = tasksData.find(t => t.id === id);
+            if (task) { task.status = newStatus; renderProjects(); }
+        }
+
+        function changeTaskPriority(id, newPriority) {
+            const task = tasksData.find(t => t.id === id);
+            if (task) { task.priority = newPriority; renderProjects(); }
+        }
+
+        function submitTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('t-title').value;
+            const group = document.getElementById('t-group').value;
+            const status = document.getElementById('t-status').value;
+            const priority = document.getElementById('t-priority').value;
+            const assignee = document.getElementById('t-assignee').value;
+            const deadline = document.getElementById('t-deadline').value;
+
+            const newTask = { id: Date.now(), title, desc:"", group, status, priority, assignee, deadline };
+            tasksData.push(newTask);
+            renderProjects();
+            closeModal('modal-task');
+            e.target.reset();
+        }
+
+        // ================= MODULE 5: RENDER TODO =================
+        function renderTodos() {
+            const ul = document.getElementById('personal-todo-list');
+            if(!ul) return;
+            ul.innerHTML = '';
+            personalTodosData.forEach(todo => {
+                ul.innerHTML += `
+                    <li class="py-3 flex items-center gap-3">
+                        <input type="checkbox" ${todo.done ? 'checked' : ''} class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer">
+                        <span class="text-sm ${todo.done ? 'line-through text-slate-400' : 'text-slate-700'}">${todo.text}</span>
+                    </li>
+                `;
+            });
+        }
+
+        // ================= MODULE 6: SIMPLE CALENDAR RENDER =================
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            // Render 30 simple dummy boxes for calendar layout
+            for(let i=1; i<=30; i++) {
+                grid.innerHTML += `
+                    <div class="h-20 border border-slate-100 rounded-lg p-1.5 hover:bg-slate-50 transition cursor-pointer">
+                        <span class="text-xs font-semibold text-slate-500">${i}</span>
+                        ${i === 18 || i === 20 ? '<div class="mt-1 w-full h-1.5 bg-brand-500 rounded-full"></div>' : ''}
+                    </div>
+                `;
+            }
+        }
+
+        // ================= POPUP URGENT TASK LOGIC =================
+        function checkUrgentTask() {
+            // Ambil semua tugas yang belum selesai
+            const pendingTasks = tasksData.filter(t => t.status !== 'Done');
+            
+            if (pendingTasks.length === 0) return;
+
+            // Urutkan berdasarkan tanggal deadline yang paling dekat
+            pendingTasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+            
+            const urgentTask = pendingTasks[0]; // Ambil tugas teratas
+
+            // Masukkan data ke dalam modal
+            document.getElementById('urgent-task-title').innerText = urgentTask.title;
+            document.getElementById('urgent-task-pic').innerText = urgentTask.assignee;
+            
+            // Format tanggal agar lebih mudah dibaca (contoh: 18 Oktober 2026)
+            const dateObj = new Date(urgentTask.deadline);
+            const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('urgent-task-deadline').innerText = dateStr;
+
+            // Tampilkan modal
+            openModal('modal-urgent-task');
+        }
+
+        // ================= INITIALIZATION =================
+        window.onload = function() {
+            // Set current date
+            const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+            document.getElementById('current-date-str').innerText = dateStr;
+
+            // Render all modules to prevent empty tabs
+            renderOverviewStats();
+            renderMembers();
+            renderContent();
+            renderProjects();
+            renderTodos();
+            renderCalendar();
+
+            // Init Charts with null check
+            const ctxTask = document.getElementById('taskChart')?.getContext('2d');
+            if(ctxTask) new Chart(ctxTask, { type: 'doughnut', data: { labels: ['Done', 'Working', 'Stuck', 'To Do'], datasets: [{ data: [1,1,1,1], backgroundColor: ['#00c875', '#fdab3d', '#e2445c', '#c4c4c4'] }] } });
+            
+            const ctxContent = document.getElementById('contentChart')?.getContext('2d');
+            if(ctxContent) new Chart(ctxContent, { type: 'bar', data: { labels: ['Agt', 'Sep', 'Okt'], datasets: [{ label: 'Konten Terbit', data: [12, 19, 3], backgroundColor: '#3b82f6' }] } });
+            
+            // Munculkan popup tugas mendesak setelah delay 500ms agar lebih smooth saat halaman dimuat
+            setTimeout(checkUrgentTask, 500);
+        };
+    </script>
+</body>
+</html>
